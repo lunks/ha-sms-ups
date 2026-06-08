@@ -25,6 +25,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .coordinator import STATUS_OPTIONS, SmsUpsConfigEntry, SmsUpsCoordinator
 from .entity import SmsUpsEntity
 
+PARALLEL_UPDATES = 0
+
 
 @dataclass(frozen=True, kw_only=True)
 class SmsUpsSensorDescription(SensorEntityDescription):
@@ -54,7 +56,6 @@ SENSOR_DESCRIPTIONS: tuple[SmsUpsSensorDescription, ...] = (
         translation_key="output_power",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
-        icon="mdi:gauge",
         value_fn=lambda d: d.get("output_power", {}).get("value"),
     ),
     SmsUpsSensorDescription(

@@ -20,6 +20,8 @@ from .api import SmsUpsConnectionError
 from .coordinator import SmsUpsConfigEntry, SmsUpsCoordinator
 from .entity import SmsUpsEntity
 
+PARALLEL_UPDATES = 1
+
 EFFECT_LIST = [
     "Solid",
     "Fade",

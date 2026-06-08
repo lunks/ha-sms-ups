@@ -17,6 +17,8 @@ from .api import SmsUpsConnectionError
 from .coordinator import SmsUpsConfigEntry, SmsUpsCoordinator
 from .entity import SmsUpsEntity
 
+PARALLEL_UPDATES = 1
+
 
 @dataclass(frozen=True, kw_only=True)
 class SmsUpsButtonDescription(ButtonEntityDescription):
@@ -31,20 +33,17 @@ BUTTON_DESCRIPTIONS: tuple[SmsUpsButtonDescription, ...] = (
         key="test_battery_quick",
         translation_key="test_battery_quick",
         device_class=ButtonDeviceClass.RESTART,
-        icon="mdi:battery-heart-outline",
         tipo_evento="1",
     ),
     SmsUpsButtonDescription(
         key="test_battery_deep",
         translation_key="test_battery_deep",
         device_class=ButtonDeviceClass.RESTART,
-        icon="mdi:battery-heart",
         tipo_evento="3",
     ),
     SmsUpsButtonDescription(
         key="test_battery_stop",
         translation_key="test_battery_stop",
-        icon="mdi:stop-circle-outline",
         tipo_evento="4",
     ),
 )

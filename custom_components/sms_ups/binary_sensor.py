@@ -17,6 +17,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .coordinator import SmsUpsConfigEntry, SmsUpsCoordinator
 from .entity import SmsUpsEntity
 
+PARALLEL_UPDATES = 0
+
 
 @dataclass(frozen=True, kw_only=True)
 class SmsUpsBinarySensorDescription(BinarySensorEntityDescription):

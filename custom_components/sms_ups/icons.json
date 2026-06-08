@@ -1,0 +1,23 @@
+{
+  "entity": {
+    "sensor": {
+      "status": {
+        "default": "mdi:information-outline"
+      },
+      "output_power": {
+        "default": "mdi:gauge"
+      }
+    },
+    "button": {
+      "test_battery_quick": {
+        "default": "mdi:battery-heart-outline"
+      },
+      "test_battery_deep": {
+        "default": "mdi:battery-heart"
+      },
+      "test_battery_stop": {
+        "default": "mdi:stop-circle-outline"
+      }
+    }
+  }
+}

@@ -23,6 +23,12 @@
           "port": "Porta",
           "username": "Usuário",
           "password": "Senha"
+        },
+        "data_description": {
+          "host": "Endereço IP ou nome do nobreak na sua rede local.",
+          "port": "Porta HTTPS da interface web do nobreak (geralmente 443).",
+          "username": "A conta usada para entrar na interface web do nobreak.",
+          "password": "A senha dessa conta."
         }
       },
       "credentials": {
@@ -31,6 +37,10 @@
         "data": {
           "username": "Usuário",
           "password": "Senha"
+        },
+        "data_description": {
+          "username": "A conta usada para entrar na interface web do nobreak.",
+          "password": "A senha dessa conta."
         }
       },
       "reauth_confirm": {

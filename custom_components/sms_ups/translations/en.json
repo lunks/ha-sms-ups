@@ -23,6 +23,12 @@
           "port": "Port",
           "username": "Username",
           "password": "Password"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the UPS on your local network.",
+          "port": "HTTPS port the UPS web interface listens on (usually 443).",
+          "username": "The account used to sign in to the UPS web interface.",
+          "password": "The password for that account."
         }
       },
       "credentials": {
@@ -31,6 +37,10 @@
         "data": {
           "username": "Username",
           "password": "Password"
+        },
+        "data_description": {
+          "username": "The account used to sign in to the UPS web interface.",
+          "password": "The password for that account."
         }
       },
       "reauth_confirm": {
