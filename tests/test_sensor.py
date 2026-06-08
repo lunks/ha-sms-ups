@@ -43,3 +43,26 @@ async def test_sensor_unique_ids(
     entry = entity_reg.async_get("sensor.office_ups_battery_level")
     assert entry.unique_id == "SN12345678_battery_level"
     assert not entry.unique_id.startswith("None_")
+
+
+async def test_status_sensor_is_enum(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_api: AiohttpClientMocker,
+) -> None:
+    """The status sensor is an ENUM exposing the snake_case state options."""
+    from homeassistant.components.sensor import (
+        ATTR_OPTIONS,
+        SensorDeviceClass,
+    )
+    from homeassistant.const import ATTR_DEVICE_CLASS
+
+    await _setup(hass, mock_config_entry)
+
+    state = hass.states.get("sensor.office_ups_status")
+    assert state is not None
+    # Default fixture has grid power and is not on battery.
+    assert state.state == "online"
+    assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.ENUM
+    assert "on_battery" in state.attributes[ATTR_OPTIONS]
+    assert "online" in state.attributes[ATTR_OPTIONS]

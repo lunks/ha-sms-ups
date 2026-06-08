@@ -68,7 +68,19 @@
   },
   "entity": {
     "sensor": {
-      "status": { "name": "Status" },
+      "status": {
+        "name": "Status",
+        "state": {
+          "online": "Online",
+          "on_battery": "On battery",
+          "low_battery": "Low battery",
+          "battery_test": "Battery test",
+          "bypass": "Bypass",
+          "boost": "Boost",
+          "overpower": "Overpower",
+          "unknown": "Unknown"
+        }
+      },
       "input_voltage": { "name": "Input voltage" },
       "output_voltage": { "name": "Output voltage" },
       "battery_level": { "name": "Battery level" },

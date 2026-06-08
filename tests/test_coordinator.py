@@ -56,6 +56,32 @@ async def test_meters_parse_and_normalize(
     # Model extracted from the "Tipo" meter
     assert coordinator.api.model == "Senoidal 1500VA"
 
+    # Default fixture: grid power present, not on battery -> online
+    assert data["status"] == "online"
+
+    # LED state is folded into the same update cycle.
+    assert data["led"]["enabled"] == 1
+
+
+def test_compute_status_keys() -> None:
+    """_compute_status returns the expected snake_case keys per state combo."""
+    from custom_components.sms_ups.coordinator import SmsUpsCoordinator as Coord
+
+    compute = Coord._compute_status
+
+    assert compute({"grid_power": True}) == "online"
+    assert compute({"ups_active": True, "battery_level": {"value": 80}}) == (
+        "on_battery"
+    )
+    assert compute({"ups_active": True, "battery_level": {"value": 10}}) == (
+        "low_battery"
+    )
+    assert compute({"battery_test": True}) == "battery_test"
+    assert compute({"bypass": True}) == "bypass"
+    assert compute({"boost": True}) == "boost"
+    assert compute({"overpower": True}) == "overpower"
+    assert compute({}) == "unknown"
+
 
 async def test_token_expiry_triggers_refresh(
     hass: HomeAssistant,
@@ -63,10 +89,12 @@ async def test_token_expiry_triggers_refresh(
     aioclient_mock: AiohttpClientMocker,
     login_response: dict[str, Any],
     meters_response: dict[str, Any],
+    led_response: dict[str, Any],
 ) -> None:
     """An S010 meters response triggers a token refresh then a retry."""
     aioclient_mock.post(f"{BASE_URL}/sms/mobile/login/", json=login_response)
     aioclient_mock.post(f"{BASE_URL}/sms/mobile/login/atualiza", json=login_response)
+    aioclient_mock.get(f"{BASE_URL}/sms/mobile/ledRGB/", json=led_response)
     # First meters call returns S010, subsequent calls succeed.
     aioclient_mock.get(
         f"{BASE_URL}/sms/mobile/medidores/",
@@ -91,12 +119,14 @@ async def test_session_invalid_triggers_relogin(
     aioclient_mock: AiohttpClientMocker,
     login_response: dict[str, Any],
     meters_response: dict[str, Any],
+    led_response: dict[str, Any],
 ) -> None:
     """An S003 meters response triggers a re-login then a retry."""
     aioclient_mock.post(
         f"{BASE_URL}/sms/mobile/login/",
         side_effect=_sequence([login_response]),
     )
+    aioclient_mock.get(f"{BASE_URL}/sms/mobile/ledRGB/", json=led_response)
     aioclient_mock.get(
         f"{BASE_URL}/sms/mobile/medidores/",
         side_effect=_sequence([{"responseStatus": "S003"}, meters_response]),

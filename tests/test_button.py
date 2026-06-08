@@ -49,10 +49,12 @@ async def test_button_press_api_error_raises(
     aioclient_mock: AiohttpClientMocker,
     login_response: dict,
     meters_response: dict,
+    led_response: dict,
 ) -> None:
     """An API error during a press surfaces as HomeAssistantError."""
     aioclient_mock.post(f"{BASE_URL}/sms/mobile/login/", json=login_response)
     aioclient_mock.get(f"{BASE_URL}/sms/mobile/medidores/", json=meters_response)
+    aioclient_mock.get(f"{BASE_URL}/sms/mobile/ledRGB/", json=led_response)
     aioclient_mock.post(
         f"{BASE_URL}/sms/mobile/disparo", json={"responseStatus": "S999"}
     )

@@ -22,7 +22,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .coordinator import SmsUpsConfigEntry, SmsUpsCoordinator
+from .coordinator import STATUS_OPTIONS, SmsUpsConfigEntry, SmsUpsCoordinator
 from .entity import SmsUpsEntity
 
 
@@ -37,7 +37,8 @@ SENSOR_DESCRIPTIONS: tuple[SmsUpsSensorDescription, ...] = (
     SmsUpsSensorDescription(
         key="status",
         translation_key="status",
-        icon="mdi:information-outline",
+        device_class=SensorDeviceClass.ENUM,
+        options=STATUS_OPTIONS,
         value_fn=lambda d: d.get("status"),
     ),
     SmsUpsSensorDescription(

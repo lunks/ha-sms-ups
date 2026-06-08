@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from homeassistant.components.light import (
@@ -20,8 +19,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .api import SmsUpsConnectionError
 from .coordinator import SmsUpsConfigEntry, SmsUpsCoordinator
 from .entity import SmsUpsEntity
-
-_LOGGER = logging.getLogger(__name__)
 
 EFFECT_LIST = [
     "Solid",
@@ -63,7 +60,6 @@ async def async_setup_entry(
 class SmsUpsLight(SmsUpsEntity, LightEntity):
     """Representation of the SMS UPS RGB LED."""
 
-    _attr_has_entity_name = True
     _attr_translation_key = "led"
     _attr_color_mode = ColorMode.RGB
     _attr_supported_color_modes = {ColorMode.RGB}
@@ -73,41 +69,47 @@ class SmsUpsLight(SmsUpsEntity, LightEntity):
     def __init__(self, coordinator: SmsUpsCoordinator) -> None:
         super().__init__(coordinator)
         self._attr_unique_id = f"{self._device_id}_led_rgb"
-        self._state: dict[str, Any] = {}
+
+    @property
+    def _led(self) -> dict[str, Any]:
+        """Return the LED state from coordinator data."""
+        if not self.coordinator.data:
+            return {}
+        return self.coordinator.data.get("led") or {}
 
     @property
     def is_on(self) -> bool | None:
         """Return whether the LED is on."""
-        if not self._state:
+        if not self._led:
             return None
-        return self._state.get("enabled") == 1
+        return self._led.get("enabled") == 1
 
     @property
     def brightness(self) -> int | None:
         """Return brightness (0-255)."""
-        if not self._state:
+        if not self._led:
             return None
         # API uses 0-100 alpha, HA uses 0-255
-        alpha = self._state.get("alpha", 100)
+        alpha = self._led.get("alpha", 100)
         return round(alpha * 255 / 100)
 
     @property
     def rgb_color(self) -> tuple[int, int, int] | None:
         """Return RGB color."""
-        if not self._state:
+        if not self._led:
             return None
         return (
-            self._state.get("red", 0),
-            self._state.get("green", 0),
-            self._state.get("blue", 0),
+            self._led.get("red", 0),
+            self._led.get("green", 0),
+            self._led.get("blue", 0),
         )
 
     @property
     def effect(self) -> str | None:
         """Return current effect."""
-        if not self._state:
+        if not self._led:
             return None
-        code = self._state.get("effect", 0)
+        code = self._led.get("effect", 0)
         return CODE_TO_EFFECT.get(code, "Solid")
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -129,28 +131,16 @@ class SmsUpsLight(SmsUpsEntity, LightEntity):
                 await self.coordinator.api.set_led_color(
                     red=r, green=g, blue=b, alpha=alpha
                 )
-
-            await self._async_refresh_state()
         except SmsUpsConnectionError as err:
             raise HomeAssistantError(f"Failed to control LED: {err}") from err
+
+        await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the LED off."""
         try:
             await self.coordinator.api.set_led_enabled(False)
-            await self._async_refresh_state()
         except SmsUpsConnectionError as err:
             raise HomeAssistantError(f"Failed to turn off LED: {err}") from err
 
-    async def async_added_to_hass(self) -> None:
-        """Fetch initial LED state when added."""
-        await super().async_added_to_hass()
-        await self._async_refresh_state()
-
-    async def _async_refresh_state(self) -> None:
-        """Fetch LED state from the API."""
-        try:
-            self._state = await self.coordinator.api.get_led_state()
-            self.async_write_ha_state()
-        except SmsUpsConnectionError:
-            _LOGGER.debug("Failed to refresh LED state")
+        await self.coordinator.async_request_refresh()

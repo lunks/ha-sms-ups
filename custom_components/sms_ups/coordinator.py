@@ -29,6 +29,17 @@ METER_KEY_MAP = {
     "Tipo": "ups_type",
 }
 
+STATUS_OPTIONS = [
+    "online",
+    "on_battery",
+    "low_battery",
+    "battery_test",
+    "bypass",
+    "boost",
+    "overpower",
+    "unknown",
+]
+
 STATE_KEY_MAP = {
     "Nobreak": "ups_active",
     "Carga da Bateria": "battery_charging",
@@ -92,25 +103,33 @@ class SmsUpsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         data["status"] = self._compute_status(data)
 
+        # Pull the RGB LED state in the same cycle so the light entity can
+        # read it from coordinator data instead of fetching out-of-band.
+        if self.api.features.get("ledRGB") == "true":
+            try:
+                data["led"] = await self.api.get_led_state()
+            except SmsUpsConnectionError as err:
+                _LOGGER.debug("Failed to fetch LED state: %s", err)
+
         return data
 
     @staticmethod
     def _compute_status(data: dict[str, Any]) -> str:
-        """Derive UPS status string from state flags."""
+        """Derive a snake_case UPS status key from the state flags."""
         if data.get("ups_active"):
             battery = data.get("battery_level", {})
             level = battery.get("value") if isinstance(battery, dict) else None
             if level is not None and level < 20:
-                return "Low Battery"
-            return "On Battery"
+                return "low_battery"
+            return "on_battery"
         if data.get("battery_test"):
-            return "Battery Test"
+            return "battery_test"
         if data.get("bypass"):
-            return "Bypass"
+            return "bypass"
         if data.get("boost"):
-            return "Boost"
+            return "boost"
         if data.get("overpower"):
-            return "Overpower"
+            return "overpower"
         if data.get("grid_power"):
-            return "Online"
-        return "Unknown"
+            return "online"
+        return "unknown"
