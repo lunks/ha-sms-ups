@@ -1,0 +1,84 @@
+{
+  "config": {
+    "step": {
+      "select": {
+        "title": "Select UPS",
+        "description": "The following UPS devices were found on your network.",
+        "data": {
+          "device": "Device"
+        }
+      },
+      "not_found": {
+        "title": "No devices found",
+        "description": "No UPS devices were found on the network. You can scan again or enter the connection details manually.",
+        "data": {
+          "action": "What would you like to do?"
+        }
+      },
+      "manual": {
+        "title": "Manual setup",
+        "description": "Enter your UPS connection details.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "credentials": {
+        "title": "UPS Credentials",
+        "description": "Enter credentials for {name} ({host})",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate",
+        "description": "Credentials for {host} are no longer valid. Please enter new credentials.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the UPS",
+      "invalid_auth": "Invalid username or password",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This UPS is already configured",
+      "no_devices_found": "No UPS devices found on the network",
+      "all_configured": "All discovered UPS devices are already configured"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": { "name": "Status" },
+      "input_voltage": { "name": "Input voltage" },
+      "output_voltage": { "name": "Output voltage" },
+      "battery_level": { "name": "Battery level" },
+      "output_power": { "name": "Output power" },
+      "temperature": { "name": "Temperature" },
+      "output_frequency": { "name": "Output frequency" }
+    },
+    "light": {
+      "led": { "name": "LED" }
+    },
+    "button": {
+      "test_battery_quick": { "name": "Battery test (quick)" },
+      "test_battery_deep": { "name": "Battery test (deep)" },
+      "test_battery_stop": { "name": "Battery test stop" }
+    },
+    "binary_sensor": {
+      "grid_power": { "name": "Grid power" },
+      "battery_charging": { "name": "Battery charging" },
+      "ups_active": { "name": "On battery" },
+      "boost": { "name": "Boost" },
+      "bypass": { "name": "Bypass" },
+      "overpower": { "name": "Overpower" },
+      "battery_test": { "name": "Battery test" }
+    }
+  }
+}

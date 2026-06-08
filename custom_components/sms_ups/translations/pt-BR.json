@@ -1,0 +1,84 @@
+{
+  "config": {
+    "step": {
+      "select": {
+        "title": "Selecionar Nobreak",
+        "description": "Os seguintes nobreaks foram encontrados na sua rede.",
+        "data": {
+          "device": "Dispositivo"
+        }
+      },
+      "not_found": {
+        "title": "Nenhum dispositivo encontrado",
+        "description": "Nenhum nobreak foi encontrado na rede. Você pode buscar novamente ou inserir os dados de conexão manualmente.",
+        "data": {
+          "action": "O que deseja fazer?"
+        }
+      },
+      "manual": {
+        "title": "Configuração manual",
+        "description": "Insira os dados de conexão do nobreak.",
+        "data": {
+          "host": "Endereço",
+          "port": "Porta",
+          "username": "Usuário",
+          "password": "Senha"
+        }
+      },
+      "credentials": {
+        "title": "Credenciais do Nobreak",
+        "description": "Insira as credenciais para {name} ({host})",
+        "data": {
+          "username": "Usuário",
+          "password": "Senha"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reautenticar",
+        "description": "As credenciais para {host} não são mais válidas. Insira novas credenciais.",
+        "data": {
+          "username": "Usuário",
+          "password": "Senha"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Não foi possível conectar ao nobreak",
+      "invalid_auth": "Usuário ou senha inválidos",
+      "unknown": "Erro inesperado"
+    },
+    "abort": {
+      "already_configured": "Este nobreak já está configurado",
+      "no_devices_found": "Nenhum nobreak encontrado na rede",
+      "all_configured": "Todos os nobreaks encontrados já estão configurados"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": { "name": "Status" },
+      "input_voltage": { "name": "Tensão de entrada" },
+      "output_voltage": { "name": "Tensão de saída" },
+      "battery_level": { "name": "Nível da bateria" },
+      "output_power": { "name": "Potência de saída" },
+      "temperature": { "name": "Temperatura" },
+      "output_frequency": { "name": "Frequência de saída" }
+    },
+    "light": {
+      "led": { "name": "LED" }
+    },
+    "button": {
+      "test_battery_quick": { "name": "Teste de bateria (rápido)" },
+      "test_battery_deep": { "name": "Teste de bateria (profundo)" },
+      "test_battery_stop": { "name": "Parar teste de bateria" }
+    },
+    "binary_sensor": {
+      "grid_power": { "name": "Rede elétrica" },
+      "battery_charging": { "name": "Bateria carregando" },
+      "ups_active": { "name": "Em bateria" },
+      "boost": { "name": "Boost" },
+      "bypass": { "name": "Bypass" },
+      "overpower": { "name": "Potência elevada" },
+      "battery_test": { "name": "Teste de bateria" }
+    }
+  }
+}
