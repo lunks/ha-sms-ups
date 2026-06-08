@@ -183,3 +183,88 @@ async def test_duplicate_unique_id_abort(
     )
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "already_configured"
+
+
+async def test_reauth_success(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_api: AiohttpClientMocker,
+) -> None:
+    """Reauth now succeeds (the unique-id guard no longer blocks it)."""
+    mock_config_entry.add_to_hass(hass)
+
+    result = await mock_config_entry.start_reauth_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reauth_confirm"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_USERNAME: "admin", CONF_PASSWORD: "newpass"},
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+    assert mock_config_entry.data[CONF_PASSWORD] == "newpass"
+
+    # Let the triggered reload finish, then tear down to cancel its timer.
+    await hass.async_block_till_done()
+    await hass.config_entries.async_unload(mock_config_entry.entry_id)
+    await hass.async_block_till_done()
+
+
+async def test_reauth_mismatch(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    aioclient_mock: AiohttpClientMocker,
+    login_response: dict[str, Any],
+) -> None:
+    """Reauth against a different device aborts with unique_id_mismatch."""
+    mock_config_entry.add_to_hass(hass)
+    other = {**login_response, "serie": "DIFFERENT-SERIAL"}
+    aioclient_mock.post(f"https://{HOST}:{PORT}/sms/mobile/login/", json=other)
+
+    result = await mock_config_entry.start_reauth_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_USERNAME: "admin", CONF_PASSWORD: "newpass"},
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "unique_id_mismatch"
+
+
+async def test_reconfigure_changes_host(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    aioclient_mock: AiohttpClientMocker,
+    login_response: dict[str, Any],
+    meters_response: dict[str, Any],
+    led_response: dict[str, Any],
+) -> None:
+    """Reconfigure updates host/port and reloads the entry."""
+    mock_config_entry.add_to_hass(hass)
+    new_base = "https://192.168.1.99:8443"
+    aioclient_mock.post(f"{new_base}/sms/mobile/login/", json=login_response)
+    aioclient_mock.get(f"{new_base}/sms/mobile/medidores/", json=meters_response)
+    aioclient_mock.get(f"{new_base}/sms/mobile/ledRGB/", json=led_response)
+
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOST: "192.168.1.99",
+            CONF_PORT: 8443,
+            CONF_USERNAME: "admin",
+            CONF_PASSWORD: "secret",
+        },
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert mock_config_entry.data[CONF_HOST] == "192.168.1.99"
+    assert mock_config_entry.data[CONF_PORT] == 8443
+
+    # Let the triggered reload finish, then tear down to cancel its timer.
+    await hass.async_block_till_done()
+    await hass.config_entries.async_unload(mock_config_entry.entry_id)
+    await hass.async_block_till_done()

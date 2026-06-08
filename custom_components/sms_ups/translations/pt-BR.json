@@ -40,6 +40,16 @@
           "username": "Usuário",
           "password": "Senha"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar nobreak",
+        "description": "Atualize os dados de conexão do seu nobreak.",
+        "data": {
+          "host": "Endereço",
+          "port": "Porta",
+          "username": "Usuário",
+          "password": "Senha"
+        }
       }
     },
     "error": {
@@ -50,7 +60,10 @@
     "abort": {
       "already_configured": "Este nobreak já está configurado",
       "no_devices_found": "Nenhum nobreak encontrado na rede",
-      "all_configured": "Todos os nobreaks encontrados já estão configurados"
+      "all_configured": "Todos os nobreaks encontrados já estão configurados",
+      "reauth_successful": "Reautenticação realizada com sucesso",
+      "reconfigure_successful": "Reconfiguração realizada com sucesso",
+      "unique_id_mismatch": "Este dispositivo não corresponde ao nobreak configurado"
     }
   },
   "entity": {

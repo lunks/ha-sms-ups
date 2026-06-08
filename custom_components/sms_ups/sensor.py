@@ -119,7 +119,7 @@ class SmsUpsSensor(SmsUpsEntity, SensorEntity):
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{coordinator.api.serial}_{description.key}"
+        self._attr_unique_id = f"{self._device_id}_{description.key}"
 
     @property
     def native_value(self) -> float | str | None:

@@ -46,3 +46,23 @@ async def test_setup_connection_error_is_retry(
 
     flows = hass.config_entries.flow.async_progress()
     assert not any(flow["context"]["source"] == "reauth" for flow in flows)
+
+
+async def test_setup_auth_failed_starts_reauth(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    aioclient_mock: AiohttpClientMocker,
+) -> None:
+    """An auth error during setup raises ConfigEntryAuthFailed and starts reauth."""
+    aioclient_mock.post(
+        f"{BASE_URL}/sms/mobile/login/",
+        json={"responseStatus": "S005"},
+    )
+    mock_config_entry.add_to_hass(hass)
+
+    assert not await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    await hass.async_block_till_done()
+    assert mock_config_entry.state is ConfigEntryState.SETUP_ERROR
+
+    flows = hass.config_entries.flow.async_progress()
+    assert any(flow["context"]["source"] == "reauth" for flow in flows)

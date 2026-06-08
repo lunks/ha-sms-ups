@@ -72,7 +72,7 @@ class SmsUpsLight(SmsUpsEntity, LightEntity):
 
     def __init__(self, coordinator: SmsUpsCoordinator) -> None:
         super().__init__(coordinator)
-        self._attr_unique_id = f"{coordinator.api.serial}_led_rgb"
+        self._attr_unique_id = f"{self._device_id}_led_rgb"
         self._state: dict[str, Any] = {}
 
     @property

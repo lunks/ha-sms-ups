@@ -108,6 +108,7 @@ class SmsUpsConfigFlow(ConfigFlow, domain=DOMAIN):
             if error:
                 errors["base"] = error
             else:
+                await self._async_set_unique_id_or_abort(api, user_input)
                 return self._create_entry(user_input, api)
 
         return self.async_show_form(
@@ -140,6 +141,7 @@ class SmsUpsConfigFlow(ConfigFlow, domain=DOMAIN):
             if error:
                 errors["base"] = error
             else:
+                await self._async_set_unique_id_or_abort(api, full_input)
                 return self._create_entry(full_input, api)
 
         return self.async_show_form(
@@ -176,11 +178,20 @@ class SmsUpsConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_USERNAME: user_input[CONF_USERNAME],
                 CONF_PASSWORD: user_input[CONF_PASSWORD],
             }
-            error, _ = await self._validate_connection(full_input)
+            error, api = await self._validate_connection(full_input)
             if error:
                 errors["base"] = error
             else:
-                return self.async_update_reload_and_abort(reauth_entry, data=full_input)
+                if api.serial is not None:
+                    await self.async_set_unique_id(api.serial)
+                    self._abort_if_unique_id_mismatch()
+                return self.async_update_reload_and_abort(
+                    reauth_entry,
+                    data_updates={
+                        CONF_USERNAME: user_input[CONF_USERNAME],
+                        CONF_PASSWORD: user_input[CONF_PASSWORD],
+                    },
+                )
 
         return self.async_show_form(
             step_id="reauth_confirm",
@@ -196,10 +207,47 @@ class SmsUpsConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Allow changing host/port (and credentials) of an existing entry."""
+        errors: dict[str, str] = {}
+        reconfigure_entry = self._get_reconfigure_entry()
+
+        if user_input is not None:
+            error, api = await self._validate_connection(user_input)
+            if error:
+                errors["base"] = error
+            else:
+                if api.serial is not None:
+                    await self.async_set_unique_id(api.serial)
+                    self._abort_if_unique_id_mismatch()
+                return self.async_update_reload_and_abort(
+                    reconfigure_entry, data_updates=user_input
+                )
+
+        data = reconfigure_entry.data
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_HOST, default=data[CONF_HOST]): str,
+                    vol.Required(CONF_PORT, default=data[CONF_PORT]): int,
+                    vol.Required(CONF_USERNAME, default=data[CONF_USERNAME]): str,
+                    vol.Required(CONF_PASSWORD): str,
+                }
+            ),
+            errors=errors,
+        )
+
     async def _validate_connection(
         self, user_input: dict[str, Any]
     ) -> tuple[str | None, SmsUpsApi | None]:
-        """Validate the connection. Returns (error_key, api_on_success)."""
+        """Validate the connection. Returns (error_key, api_on_success).
+
+        This only authenticates; unique-id handling is left to each step so
+        that reauth and reconfigure can apply the correct guard.
+        """
         session = async_get_clientsession(self.hass, verify_ssl=False)
         api = SmsUpsApi(
             host=user_input[CONF_HOST],
@@ -218,10 +266,23 @@ class SmsUpsConfigFlow(ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected error during setup")
             return "unknown", None
 
+        return None, api
+
+    async def _async_set_unique_id_or_abort(
+        self, api: SmsUpsApi, user_input: dict[str, Any]
+    ) -> None:
+        """Guard against duplicate devices for the user/manual paths.
+
+        Uses the device serial when available; otherwise falls back to a
+        host/port match so duplicate protection is never silently disabled.
+        """
+        if api.serial is None:
+            self._async_abort_entries_match(
+                {CONF_HOST: user_input[CONF_HOST], CONF_PORT: user_input[CONF_PORT]}
+            )
+            return
         await self.async_set_unique_id(api.serial)
         self._abort_if_unique_id_configured()
-
-        return None, api
 
     def _create_entry(
         self, user_input: dict[str, Any], api: SmsUpsApi | None = None

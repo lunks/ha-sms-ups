@@ -40,6 +40,16 @@
           "username": "Username",
           "password": "Password"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure UPS",
+        "description": "Update the connection details for your UPS.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -50,7 +60,10 @@
     "abort": {
       "already_configured": "This UPS is already configured",
       "no_devices_found": "No UPS devices found on the network",
-      "all_configured": "All discovered UPS devices are already configured"
+      "all_configured": "All discovered UPS devices are already configured",
+      "reauth_successful": "Re-authentication was successful",
+      "reconfigure_successful": "Reconfiguration was successful",
+      "unique_id_mismatch": "This device does not match the configured UPS"
     }
   },
   "entity": {

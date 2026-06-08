@@ -74,7 +74,7 @@ class SmsUpsButton(SmsUpsEntity, ButtonEntity):
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{coordinator.api.serial}_{description.key}"
+        self._attr_unique_id = f"{self._device_id}_{description.key}"
 
     async def async_press(self) -> None:
         """Handle the button press."""

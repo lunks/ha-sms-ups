@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SmsUpsApi, SmsUpsAuthError, SmsUpsConnectionError
@@ -27,7 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SmsUpsConfigEntry) -> bo
     try:
         await api.login()
     except SmsUpsAuthError as err:
-        raise ConfigEntryNotReady(
+        raise ConfigEntryAuthFailed(
             f"Authentication failed for {entry.data[CONF_HOST]}"
         ) from err
     except SmsUpsConnectionError as err:
