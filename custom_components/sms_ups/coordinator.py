@@ -12,7 +12,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import SmsUpsApi, SmsUpsAuthError, SmsUpsConnectionError
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, LOW_BATTERY_THRESHOLD
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class SmsUpsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if data.get("ups_active"):
             battery = data.get("battery_level", {})
             level = battery.get("value") if isinstance(battery, dict) else None
-            if level is not None and level < 20:
+            if level is not None and level < LOW_BATTERY_THRESHOLD:
                 return "low_battery"
             return "on_battery"
         if data.get("battery_test"):

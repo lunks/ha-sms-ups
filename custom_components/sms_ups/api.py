@@ -9,7 +9,13 @@ from typing import Any
 
 import aiohttp
 
-from .const import DISCOVERY_MSG, DISCOVERY_PORT, DISCOVERY_TIMEOUT
+from .const import (
+    DISCOVERY_MSG,
+    DISCOVERY_PORT,
+    DISCOVERY_TIMEOUT,
+    EVENTS_WITH_DURATION,
+    ResponseStatus,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -92,7 +98,7 @@ class SmsUpsApi:
             raise SmsUpsConnectionError(f"Cannot connect to {self._host}") from err
 
         status = data.get("responseStatus")
-        if status != "S001":
+        if status != ResponseStatus.OK:
             raise SmsUpsAuthError(f"Login failed: {status}")
 
         self.token = data["token"]
@@ -116,7 +122,7 @@ class SmsUpsApi:
         except (aiohttp.ClientError, TimeoutError) as err:
             raise SmsUpsConnectionError("Token refresh failed") from err
 
-        if data.get("responseStatus") == "S001":
+        if data.get("responseStatus") == ResponseStatus.OK:
             self.token = data["token"]
             self.refresh_token_value = data["refreshToken"]
         else:
@@ -137,17 +143,17 @@ class SmsUpsApi:
 
         status = data.get("responseStatus")
 
-        if status == "S010":
+        if status == ResponseStatus.TOKEN_EXPIRED:
             _LOGGER.debug("Token expired, refreshing")
             await self._refresh_token()
             return await self._get_meters_raw()
 
-        if status == "S003":
+        if status == ResponseStatus.SESSION_INVALID:
             _LOGGER.debug("Session invalid, re-authenticating")
             await self.login()
             return await self._get_meters_raw()
 
-        if status != "S001":
+        if status != ResponseStatus.OK:
             raise SmsUpsConnectionError(f"Unexpected response: {status}")
 
         # Extract model from meters (first time only)
@@ -169,7 +175,7 @@ class SmsUpsApi:
         ) as resp:
             data = await resp.json(content_type=None)
 
-        if data.get("responseStatus") != "S001":
+        if data.get("responseStatus") != ResponseStatus.OK:
             raise SmsUpsConnectionError(
                 f"Failed after re-auth: {data.get('responseStatus')}"
             )
@@ -181,7 +187,7 @@ class SmsUpsApi:
         url = f"{self._base_url}/sms/mobile/disparo"
         headers = {"token": self.token, "deployid": self.deploy_id}
         params: dict[str, str] = {"tipoEvento": tipo_evento}
-        if tipo_evento in ("2", "8") and tempo:
+        if tipo_evento in EVENTS_WITH_DURATION and tempo:
             params["tempo"] = tempo
 
         try:
@@ -193,7 +199,7 @@ class SmsUpsApi:
             raise SmsUpsConnectionError(f"Command failed: {err}") from err
 
         status = data.get("responseStatus")
-        if status == "S010":
+        if status == ResponseStatus.TOKEN_EXPIRED:
             await self._refresh_token()
             headers["token"] = self.token
             async with self._session.post(
@@ -201,7 +207,7 @@ class SmsUpsApi:
             ) as resp:
                 data = await resp.json(content_type=None)
 
-        if data.get("responseStatus") != "S001":
+        if data.get("responseStatus") != ResponseStatus.OK:
             raise SmsUpsConnectionError(f"Command failed: {data.get('responseStatus')}")
 
     def _auth_headers(self) -> dict[str, str]:
@@ -226,8 +232,8 @@ class SmsUpsApi:
             raise SmsUpsConnectionError(f"Request failed: {err}") from err
 
         status = data.get("responseStatus")
-        if status in ("S010", "S003"):
-            if status == "S010":
+        if status in (ResponseStatus.TOKEN_EXPIRED, ResponseStatus.SESSION_INVALID):
+            if status == ResponseStatus.TOKEN_EXPIRED:
                 await self._refresh_token()
             else:
                 await self.login()
@@ -245,7 +251,7 @@ class SmsUpsApi:
     async def get_led_state(self) -> dict[str, Any]:
         """Fetch LED RGB state."""
         data = await self._authed_request("GET", "/sms/mobile/ledRGB/")
-        if data.get("responseStatus") != "S001":
+        if data.get("responseStatus") != ResponseStatus.OK:
             raise SmsUpsConnectionError(
                 f"LED state failed: {data.get('responseStatus')}"
             )
@@ -258,7 +264,7 @@ class SmsUpsApi:
             "/sms/mobile/ledRGB/",
             params={"en": "1" if enabled else "0"},
         )
-        if data.get("responseStatus") != "S001":
+        if data.get("responseStatus") != ResponseStatus.OK:
             raise SmsUpsConnectionError(
                 f"LED enable failed: {data.get('responseStatus')}"
             )
@@ -295,7 +301,7 @@ class SmsUpsApi:
             "/sms/mobile/ledRGB/",
             params=params,
         )
-        if data.get("responseStatus") != "S001":
+        if data.get("responseStatus") != ResponseStatus.OK:
             raise SmsUpsConnectionError(
                 f"LED color failed: {data.get('responseStatus')}"
             )
