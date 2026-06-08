@@ -1,0 +1,11 @@
+{
+  "responseStatus": "S001",
+  "token": "test-token",
+  "refreshToken": "test-refresh-token",
+  "deployId": "deploy-123",
+  "deployName": "Office UPS",
+  "serie": "SN12345678",
+  "features": {
+    "ledRGB": "true"
+  }
+}

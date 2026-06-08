@@ -1,0 +1,49 @@
+{
+  "responseStatus": "S001",
+  "medidores": [
+    {
+      "nome": "Tensao de Entrada",
+      "unidade": "V",
+      "fases": { "valor": "220.5", "max": "260", "min": "180" }
+    },
+    {
+      "nome": "Tensao de Saida",
+      "unidade": "V",
+      "fases": { "valor": "120.0", "max": "130", "min": "110" }
+    },
+    {
+      "nome": "Nivel da Bateria",
+      "unidade": "%",
+      "fases": { "valor": "85", "max": "100", "min": "0" }
+    },
+    {
+      "nome": "Potencia de Saida",
+      "unidade": "%",
+      "fases": { "valor": "42", "max": "100", "min": "0" }
+    },
+    {
+      "nome": "Temperatura",
+      "unidade": "°C",
+      "fases": { "valor": "31.5", "max": "60", "min": "0" }
+    },
+    {
+      "nome": "Frequencia de Saida",
+      "unidade": "Hz",
+      "fases": { "valor": "60.0", "max": "63", "min": "57" }
+    },
+    {
+      "nome": "Tipo",
+      "unidade": "",
+      "fases": { "valor": "Senoidal 1500VA" }
+    }
+  ],
+  "estados": [
+    { "nome": "Nobreak", "valor": false },
+    { "nome": "Carga da Bateria", "valor": true },
+    { "nome": "Rede Eletrica", "valor": true },
+    { "nome": "Teste", "valor": false },
+    { "nome": "Boost", "valor": false },
+    { "nome": "ByPass", "valor": false },
+    { "nome": "Potencia Elevada", "valor": false }
+  ]
+}

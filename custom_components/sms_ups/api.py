@@ -302,7 +302,7 @@ class SmsUpsApi:
 
     @staticmethod
     async def discover(
-        timeout: float = DISCOVERY_TIMEOUT,
+        duration: float = DISCOVERY_TIMEOUT,
     ) -> list[dict[str, Any]]:
         """Discover UPS devices on the local network via UDP broadcast."""
         loop = asyncio.get_running_loop()
@@ -317,7 +317,7 @@ class SmsUpsApi:
                 DISCOVERY_MSG.encode("utf-8"),
                 ("255.255.255.255", DISCOVERY_PORT),
             )
-            await asyncio.sleep(timeout)
+            await asyncio.sleep(duration)
         finally:
             transport.close()
 

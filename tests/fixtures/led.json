@@ -1,0 +1,10 @@
+{
+  "responseStatus": "S001",
+  "enabled": 1,
+  "red": 0,
+  "green": 0,
+  "blue": 255,
+  "alpha": 100,
+  "effect": 0,
+  "speed": 5
+}

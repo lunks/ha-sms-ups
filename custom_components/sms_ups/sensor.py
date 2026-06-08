@@ -13,8 +13,8 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    EntityCategory,
     PERCENTAGE,
+    EntityCategory,
     UnitOfElectricPotential,
     UnitOfFrequency,
     UnitOfTemperature,

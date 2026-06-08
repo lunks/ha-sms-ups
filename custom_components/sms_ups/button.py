@@ -14,7 +14,6 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import SmsUpsConnectionError
-
 from .coordinator import SmsUpsConfigEntry, SmsUpsCoordinator
 from .entity import SmsUpsEntity
 
