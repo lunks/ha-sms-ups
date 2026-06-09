@@ -16,6 +16,7 @@ from .const import (
     EVENTS_WITH_DURATION,
     ResponseStatus,
 )
+from .ssl_context import get_ssl_context
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,9 +69,7 @@ class SmsUpsApi:
         self._password = password
         self._session = session
         self._base_url = f"https://{host}:{port}"
-        self._ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        self._ssl_context.check_hostname = False
-        self._ssl_context.verify_mode = ssl.CERT_NONE
+        self._ssl_context: ssl.SSLContext | None = None
 
         self.token: str | None = None
         self.refresh_token_value: str | None = None
@@ -79,6 +78,13 @@ class SmsUpsApi:
         self.serial: str | None = None
         self.model: str | None = None
         self.features: dict[str, str] = {}
+
+    async def _get_ssl(self) -> ssl.SSLContext:
+        """Build the verifying SSL context off the event loop (blocking cert load)."""
+        if self._ssl_context is None:
+            loop = asyncio.get_running_loop()
+            self._ssl_context = await loop.run_in_executor(None, get_ssl_context)
+        return self._ssl_context
 
     async def login(self) -> dict[str, Any]:
         """Authenticate with the UPS device."""
@@ -91,7 +97,7 @@ class SmsUpsApi:
         }
         try:
             async with self._session.post(
-                url, params=params, ssl=self._ssl_context
+                url, params=params, ssl=await self._get_ssl()
             ) as resp:
                 data = await resp.json(content_type=None)
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -116,7 +122,7 @@ class SmsUpsApi:
         params = {"refreshToken": self.refresh_token_value}
         try:
             async with self._session.post(
-                url, params=params, ssl=self._ssl_context
+                url, params=params, ssl=await self._get_ssl()
             ) as resp:
                 data = await resp.json(content_type=None)
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -135,7 +141,7 @@ class SmsUpsApi:
 
         try:
             async with self._session.get(
-                url, headers=headers, ssl=self._ssl_context
+                url, headers=headers, ssl=await self._get_ssl()
             ) as resp:
                 data = await resp.json(content_type=None)
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -171,7 +177,7 @@ class SmsUpsApi:
         headers = {"token": self.token, "deployid": self.deploy_id}
 
         async with self._session.get(
-            url, headers=headers, ssl=self._ssl_context
+            url, headers=headers, ssl=await self._get_ssl()
         ) as resp:
             data = await resp.json(content_type=None)
 
@@ -192,7 +198,7 @@ class SmsUpsApi:
 
         try:
             async with self._session.post(
-                url, headers=headers, params=params, ssl=self._ssl_context
+                url, headers=headers, params=params, ssl=await self._get_ssl()
             ) as resp:
                 data = await resp.json(content_type=None)
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -203,7 +209,7 @@ class SmsUpsApi:
             await self._refresh_token()
             headers["token"] = self.token
             async with self._session.post(
-                url, headers=headers, params=params, ssl=self._ssl_context
+                url, headers=headers, params=params, ssl=await self._get_ssl()
             ) as resp:
                 data = await resp.json(content_type=None)
 
@@ -225,7 +231,7 @@ class SmsUpsApi:
                 url,
                 headers=self._auth_headers(),
                 params=params,
-                ssl=self._ssl_context,
+                ssl=await self._get_ssl(),
             ) as resp:
                 data = await resp.json(content_type=None)
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -242,7 +248,7 @@ class SmsUpsApi:
                 url,
                 headers=self._auth_headers(),
                 params=params,
-                ssl=self._ssl_context,
+                ssl=await self._get_ssl(),
             ) as resp:
                 data = await resp.json(content_type=None)
 
