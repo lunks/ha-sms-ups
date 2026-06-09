@@ -22,7 +22,6 @@ from .entity import SmsUpsEntity
 
 PARALLEL_UPDATES = 1
 
-# Effect name -> device code (single source of truth).
 EFFECT_TO_CODE = {
     "Solid": 0,
     "Fade": 2,
@@ -33,10 +32,8 @@ EFFECT_TO_CODE = {
     "Power Level": 7,
 }
 
-# UI effect menu, derived so it can't drift from the code map.
 EFFECT_LIST = list(EFFECT_TO_CODE)
 
-# Device code -> effect name. Code 1 (stored preset) is also a solid colour.
 CODE_TO_EFFECT = {v: k for k, v in EFFECT_TO_CODE.items()} | {1: "Solid"}
 
 
